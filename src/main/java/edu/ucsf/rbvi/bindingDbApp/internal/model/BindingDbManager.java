@@ -47,13 +47,13 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 	final Map<String, CyNode> idMap = new HashMap<>();
 
 	public static final String SMILES = "SMILES";
-	public static final String Affinity = "BindingDb:Affinity";
-	public static final String AffinityStr = "BindingDb:AffinityStr";
-	public static final String AffinityType = "BindingDb:AffinityType";
-	public static final String MonimerId = "BindingDb:MonimerId";
-	public static final String HitCount = "BindingDb:Hits";
-	public static final String PMID = "BindingDb:PMID";
-	public static final String DOI = "BindingDb:DOI";
+	public static final String Affinity = "BDB.Affinity";
+	public static final String AffinityStr = "BDB.AffinityStr";
+	public static final String AffinityType = "BDB.AffinityType";
+	public static final String MonimerId = "BDB.MonimerId";
+	public static final String HitCount = "BDB.Hits";
+	public static final String PMID = "BDB.PMID";
+	public static final String DOI = "BDB.DOI";
 	static final String loadURI = 
 					"http://bindingdb.org/axis2/services/BDBService/getLigandsByUniprots";
 	static final String JSON = "&response=application/json";
