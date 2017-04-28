@@ -186,7 +186,13 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 				monitor.showMessage(TaskMonitor.Level.WARN, "Query returned no responses");
 				return;
 			}
-			JSONObject affMap = (JSONObject)annotationsMap.get("getLigandsByUniprotsResponse");
+			JSONObject affMap;
+		 	try {
+				affMap= (JSONObject)annotationsMap.get("getLigandsByUniprotsResponse");
+			} catch (ClassCastException cce) {
+				monitor.showMessage(TaskMonitor.Level.WARN, "Query returned no responses");
+				return;
+			}
 			if (!affMap.containsKey("affinities")) {
 				monitor.showMessage(TaskMonitor.Level.WARN, "Query returned no responses");
 				return;
@@ -235,103 +241,6 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 			}
 		}
 
-
-		/*
-		// Unfortunately, BindingDB uses XML...
-		DocumentBuilder builder = null;
-		Document annotations = null;
-		int hitCount = 0;
-		
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			builder = factory.newDocumentBuilder();
-		} catch (Exception e) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Unable to create a new document: "+e.getMessage());
-			return;
-		}
-
-		try {
-			annotations = HttpUtils.getJSON(loadURI+uniprots+"&cutoff="+cutoff+"&code=0"+JSON);
-		} catch (Exception e) {
-			e.printStackTrace();
-			monitor.showMessage(TaskMonitor.Level.ERROR, 
-			                    "Unable to get annotations for "+id+": "+e.getMessage());
-			return;
-		}
-
-		if (annotations == null) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, 
-			                    "No annotations for "+id);
-			return;
-		}
-
-		List<String> smilesList = new ArrayList<>();
-		List<String> monomerIdList = new ArrayList<>();
-		List<String> affinityStrList = new ArrayList<>();
-		List<Double> affinityList = new ArrayList<>();
-		List<String> typeList = new ArrayList<>();
-
-		// OK, now we have all of the annotations.  Build the lists
-		NodeList affinities = annotations.getElementsByTagName("bdb:affinities");
-
-		// Iterate over all of the affinities
-		for (int index = 0; index < affinities.getLength(); index++) {
-			Node affinity = affinities.item(index);
-			if (affinity.getNodeType() != Node.ELEMENT_NODE)
-				continue;
-
-			NodeList children = affinity.getChildNodes();
-			// Iterate over all of the children to get our data
-			for (int elementIndex = 0; elementIndex < children.getLength(); elementIndex++) {
-				Node element = children.item(elementIndex);
-				if (element.getNodeType() == Node.ELEMENT_NODE) {
-					String data = getContent(element);
-					if (element.getNodeName().equals("bdb:monomerid")) {
-						if (monomerIdList.contains(data)) 
-							continue;
-
-						// logger.debug("Found id "+data);
-						monomerIdList.add(data);
-						hitCount++;
-					} else if (element.getNodeName().equals("bdb:smiles")) {
-						// logger.debug("Found smiles "+data);
-						if (data.indexOf('|') >= 0 ) {
-							String[] d = data.split("\\|");  // Get rid of extra annotation
-							smilesList.add(d[0].trim());
-						} else {
-							smilesList.add(data.trim());
-						}
-					} else if (element.getNodeName().equals("bdb:affinity_type")) {
-						// logger.debug("Found type "+data);
-						typeList.add(data);
-					} else if (element.getNodeName().equals("bdb:affinity")) {
-						affinityStrList.add(data);
-						// logger.debug("Found affinity "+data);
-						// Special case
-						if (data.indexOf('<') >= 0 ) {
-							int offset = data.indexOf('<');
-							double v = Double.parseDouble(data.substring(offset+1));
-							affinityList.add(new Double(v/1.01));
-						} else if (data.indexOf('>') >= 0 ) {
-							int offset = data.indexOf('>');
-							double v = Double.parseDouble(data.substring(offset+1));
-							affinityList.add(new Double(v/.99));
-						} else {
-							affinityList.add(new Double(data));
-						}
-					}
-				}
-			}
-		}
-		// Now, set the values for this node
-		network.getRow(node).set(MonimerId, monomerIdList);
-		network.getRow(node).set(SMILES, smilesList);
-		network.getRow(node).set(Affinity, affinityList);
-		network.getRow(node).set(AffinityStr, affinityStrList);
-		network.getRow(node).set(AffinityType, typeList);
-		network.getRow(node).set(HitCount, hitCount);
-
-		*/
 		monitor.showMessage(TaskMonitor.Level.INFO, 
 		                    "Loaded "+totalBinders+" annotations for "+nodeBindMap.size()+" nodes. "+
 												"Node "+CyUtils.getName(network, maxEntries)+

@@ -66,6 +66,7 @@ public class CyActivator extends AbstractCyActivator {
 		settingsProps.setProperty(IN_MENU_BAR, "true");
 		settingsProps.setProperty(MENU_GRAVITY, "1.0");
 		registerService(bc, loadAnnotations, NetworkTaskFactory.class, settingsProps);
+		registerService(bc, loadAnnotations, NodeViewTaskFactory.class, settingsProps);
 
 	}
 }

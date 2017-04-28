@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.AbstractTask;
@@ -24,6 +25,7 @@ public class LoadAnnotationsTask extends AbstractTask {
 	public BoundedDouble affinityCutoff = new BoundedDouble(0.0, 100.0, 500.0, false, false);
 
 	private CyNetwork network;
+	private final List<CyNode> nodeList;
 
 	final BindingDbManager bindingDbManager;
 
@@ -32,9 +34,10 @@ public class LoadAnnotationsTask extends AbstractTask {
 	 * @param net CyNetwork to load the domain.
 	 * @param manager The CDD Domain manager
 	 */
-	public LoadAnnotationsTask(CyNetwork net, BindingDbManager manager) {
+	public LoadAnnotationsTask(CyNetwork net, List<CyNode> nodeList, BindingDbManager manager) {
 		super();
 		this.bindingDbManager = manager;
+		this.nodeList = nodeList;
 
 		if (net != null)
 			this.network = net;
@@ -60,9 +63,9 @@ public class LoadAnnotationsTask extends AbstractTask {
 		if (network == null)
 			network = bindingDbManager.getCurrentNetwork();
 
-		bindingDbManager.loadAnnotations(monitor, network, 
+		bindingDbManager.loadAnnotations(monitor, network,
 		                                 idColumn.getSelectedValue(), affinityCutoff.getValue(),
-																		 null);
+																		 nodeList);
 	}
 
 }
