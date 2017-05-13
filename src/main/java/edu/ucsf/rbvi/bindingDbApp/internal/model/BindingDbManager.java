@@ -46,7 +46,7 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 	private boolean ignoringSelection = false;
 	final Map<String, CyNode> idMap = new HashMap<>();
 
-	public static final String SMILES = "SMILES";
+	public static final String SMILES = "BDB.SMILES";
 	public static final String Affinity = "BDB.Affinity";
 	public static final String AffinityStr = "BDB.AffinityStr";
 	public static final String AffinityType = "BDB.AffinityType";
