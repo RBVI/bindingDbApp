@@ -53,7 +53,9 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 	public static final String MonimerId = "BDB.MonimerId";
 	public static final String HitCount = "BDB.Hits";
 	public static final String PMID = "BDB.PMID";
+	public static final String PMID_PREFIX = "https://www.ncbi.nlm.nih.gov/pubmed/";
 	public static final String DOI = "BDB.DOI";
+	public static final String DOI_PREFIX = "https://doi.org/";
 	static final String loadURI = 
 					"http://bindingdb.org/axis2/services/BDBService/getLigandsByUniprots";
 	static final String JSON = "&response=application/json";
@@ -232,8 +234,8 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 						CyUtils.appendToList(network, node, Affinity, Double.class, convertAffinity(aff));
 						CyUtils.appendToList(network, node, AffinityType, String.class, affType);
 						CyUtils.appendToList(network, node, MonimerId, String.class, monomerid);
-						CyUtils.appendToList(network, node, PMID, String.class, pmid);
-						CyUtils.appendToList(network, node, DOI, String.class, doi);
+						CyUtils.appendToList(network, node, PMID, String.class, prefix(PMID_PREFIX,pmid));
+						CyUtils.appendToList(network, node, DOI, String.class, prefix(DOI_PREFIX,doi));
 						CyUtils.addInteger(network, node, HitCount, 1);
 					}
 
@@ -269,6 +271,12 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 			return new Double(v/.99);
 		} 
 		return new Double(data);
+	}
+
+	String prefix(String pre, String str) {
+		if (str != null)
+			return pre+str;
+		return null;
 	}
 
 }
