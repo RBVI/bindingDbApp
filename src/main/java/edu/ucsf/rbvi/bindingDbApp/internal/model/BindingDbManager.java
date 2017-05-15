@@ -275,8 +275,8 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 
 	String prefix(String pre, String str) {
 		if (str != null)
-			return pre+str;
-		return null;
+			return "<html><a href=\""+pre+str+"\">"+str+"</a></html>";
+		return "";
 	}
 
 }
