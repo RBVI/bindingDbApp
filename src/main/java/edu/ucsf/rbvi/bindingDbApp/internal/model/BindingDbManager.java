@@ -320,6 +320,11 @@ public class BindingDbManager implements SetCurrentNetworkListener, TaskObserver
 		Map<String,Object> args = new HashMap<>();
 		args.put("smilesAttributes", smilesList);
 		sTaskManager.execute(commandTaskFactory.createTaskIterator("chemviz","settings", args, null));
+
+		// And now, add our preferred columns
+		args.clear();
+		args.put("columns","node.BDB.Affinity,node.BDB.AffinityType,node.BDB.PMID");
+		sTaskManager.execute(commandTaskFactory.createTaskIterator("chemviz","addTableColumns", args, null));
 	}
 
 }
