@@ -16,6 +16,8 @@ import org.w3c.dom.NodeList;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -23,7 +25,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -37,12 +43,15 @@ import edu.ucsf.rbvi.bindingDbApp.internal.utils.HttpUtils;
  * BindingDbManager
  * 
  */
-public class BindingDbManager implements SetCurrentNetworkListener {
+public class BindingDbManager implements SetCurrentNetworkListener, TaskObserver {
 	private static Font awesomeFont = null;
 	final CyApplicationManager appManager;
 	final CyEventHelper eventHelper;
 	final OpenBrowser openBrowser;
 	final CyServiceRegistrar serviceRegistrar;
+	AvailableCommands availableCommands = null;
+	CommandExecutorTaskFactory commandTaskFactory = null;
+	SynchronousTaskManager sTaskManager = null;
 	private boolean ignoringSelection = false;
 	final Map<String, CyNode> idMap = new HashMap<>();
 
@@ -109,6 +118,13 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 		serviceRegistrar.unregisterService(service, serviceClass);
 	}
 
+	public boolean haveChemViz() {
+		if (availableCommands == null) {
+			availableCommands = getService(AvailableCommands.class);
+		}
+		return availableCommands.getNamespaces().contains("chemviz");
+	}
+
 	public void openURL(String url) {
 		if (url != null || url.length() > 0)
 			openBrowser.openURL(url);
@@ -154,6 +170,9 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 			CyUtils.clearColumn(network, node, HitCount, Integer.class, null);
 		}
 		getAnnotations(monitor, network, ids.substring(0,ids.length()-1), affinityCutoff);
+		addBDBSmiles();
+
+		// Update columns
 	}
 
 	public void handleEvent(SetCurrentNetworkEvent scne) {
@@ -277,6 +296,30 @@ public class BindingDbManager implements SetCurrentNetworkListener {
 		if (str != null)
 			return "<html><a href=\""+pre+str+"\">"+str+"</a></html>";
 		return "";
+	}
+
+	// Update chemViz with our information
+	void addBDBSmiles() {
+		if (commandTaskFactory == null)
+			commandTaskFactory = getService(CommandExecutorTaskFactory.class);
+		if (sTaskManager == null)
+			sTaskManager = getService(SynchronousTaskManager.class);
+		sTaskManager.execute(commandTaskFactory.createTaskIterator("chemviz","settings", new HashMap(), this), this);
+	}
+
+	public void allFinished(FinishStatus status) {}
+
+	public void taskFinished(ObservableTask task) {
+		Map<String,String> settingsMap = task.getResults(Map.class);
+		String smilesList = settingsMap.get("smilesAttributes");
+		if (smilesList != null && smilesList.indexOf("BDB.SMILES") < 0) {
+			smilesList += ",node.BDB.SMILES";
+		} else  {
+			smilesList = "node.BDB.SMILES";
+		}
+		Map<String,Object> args = new HashMap<>();
+		args.put("smilesAttributes", smilesList);
+		sTaskManager.execute(commandTaskFactory.createTaskIterator("chemviz","settings", args, null));
 	}
 
 }
